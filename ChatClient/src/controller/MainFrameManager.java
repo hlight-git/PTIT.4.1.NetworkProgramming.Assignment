@@ -97,7 +97,11 @@ public class MainFrameManager extends FrameController<MainFrame> {
     }
     public void updateMessageTable() {
         frame.getSendButton().setEnabled(true);
-        chatTarget = chatBoxs.get(frame.getChatBoxsTable().getSelectedRow());
+        try {
+            chatTarget = chatBoxs.get(frame.getChatBoxsTable().getSelectedRow());
+        } catch (ArrayIndexOutOfBoundsException ex){
+            
+        }
         DefaultTableModel dtm = (DefaultTableModel) frame.getMessageTable().getModel();
         dtm.getDataVector().removeAllElements();
         frame.getMessageTable().getTableHeader().getColumnModel().getColumn(0).setHeaderValue(chatTarget.getName());

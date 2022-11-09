@@ -77,7 +77,6 @@ public class UserThread extends Thread{
             Object data = UDPService.receive(datagramSocket);
             switch(request_type){
                 case MESSAGE:
-                    System.out.println(((Message) data).getContent());
                     handleMessage(data);
                     break;
                 case SEARCH_USERS:
@@ -116,7 +115,6 @@ public class UserThread extends Thread{
     }
     private void sendMessageToOnlineUsers(Message message, Map <Integer, Client> connectedClientsById, Group targetGroup){
         if (targetGroup != null){
-            System.out.println(message.getReceiver().getId());
             for(User u:UserService.getAllMembersOf(targetGroup)){
                 if (u.getId() == message.getSender().getId()){
                     continue;
@@ -129,7 +127,6 @@ public class UserThread extends Thread{
             }
         }
         else if (connectedClientsById.containsKey(message.getReceiver().getId())){
-            System.out.println(message.getId() + "     " + "direct");
             Client receiveClient = connectedClientsById.get(message.getReceiver().getId());            
             sendResposeType(receiveClient, CONFIG.RESPONSE_TYPE.DIRECT_MESSAGE);
             sendToClient(receiveClient, message);
