@@ -28,17 +28,18 @@ import view.ServerMainFrame;
  */
 public class MainServerController {
     ServerMainFrame frame;
-    ServerRunner server;
-    ClientListener messageReceiver;
-    Map <Integer, Client> connectedClients;
+    ConnectRequestReceiver server;
+    ConnectionObserver connectionObserver;  
+    boolean running;
 
     public MainServerController() {
     }
     
     public void initComponents(){
         frame = new ServerMainFrame();
-        server = new ServerRunner();
-        connectedClients = new HashMap<>();
+        server = new ConnectRequestReceiver();
+        connectionObserver = new ConnectionObserver(frame);
+        running = false;
     }
     public void startApp(){
         initComponents();
@@ -50,9 +51,11 @@ public class MainServerController {
     }
     
     public void startServer(){
-        server = new ServerRunner();
+        running = true;
+        server = new ConnectRequestReceiver();
         server.setUpPort();
         server.start();
+        connectionObserver.start();
         frame.getPortField().setText("" + server.port);
         frame.getPowerButton().setText("Stop");
         frame.getConnectedTable().setEnabled(true);
@@ -60,40 +63,14 @@ public class MainServerController {
     }
     
     public void stopServer(){
+        running = false;
         try {
             server.socket.close();
         } catch (IOException ex) {
             ex.printStackTrace();
         }
-        connectedClients.clear();
-        updateConnectedTable();
         frame.getPowerButton().setText("Start");
         frame.getConnectedTable().setEnabled(false);   
         System.out.println("Stop server.");     
-    }
-    
-    public void addConnectedClient(Client client){
-        connectedClients.put(client.getSocket().getPort(), client);
-        updateConnectedTable();
-    }
-    public void updateConnectedTable(){
-        DefaultTableModel dtm = (DefaultTableModel) frame.getConnectedTable().getModel();
-        dtm.getDataVector().removeAllElements();
-        for(int p : connectedClients.keySet()){
-            Client client = connectedClients.get(p);
-            String ip = client.getSocket().getInetAddress().getHostAddress();
-            int port = client.getSocket().getPort();
-            User user = client.getUser();
-            String username = user == null?"":user.getUsername();
-            String name = user == null?"":user.getName();            
-            dtm.addRow(
-                    new Object[]{
-                        ip,
-                        port,
-                        username,
-                        name
-                    }
-            );
-        }
-    }    
+    }   
 }

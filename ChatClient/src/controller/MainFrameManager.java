@@ -86,7 +86,7 @@ public class MainFrameManager extends FrameController<MainFrame> {
     
     public void updateChatBoxsTable(){
         DefaultTableModel dtm = (DefaultTableModel) frame.getChatBoxsTable().getModel();
-        dtm.getDataVector().removeAllElements();
+        dtm.setRowCount(0);
         chatBoxs.clear();
         for (MessageBox mb:messageRepository.getMessageBoxs().values()) {
             String row = String.format("%s", mb.getReceiver().getName());
@@ -103,7 +103,7 @@ public class MainFrameManager extends FrameController<MainFrame> {
             
         }
         DefaultTableModel dtm = (DefaultTableModel) frame.getMessageTable().getModel();
-        dtm.getDataVector().removeAllElements();
+        dtm.setRowCount(0);
         frame.getMessageTable().getTableHeader().getColumnModel().getColumn(0).setHeaderValue(chatTarget.getName());
         for (Message message : messageRepository.getMessageBoxs().get(chatTarget.getId()).getMessages()) {
             dtm.addRow(new Object[]{String.format("%s (%s): %s", message.getSender().getName(), message.getTime(), message.getContent())});

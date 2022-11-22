@@ -67,7 +67,7 @@ public class InteractiveThread extends Thread{
                     break;
                 case ADD_FRIEND_REQUEST_RESULT:
                     if (((String) data).equals(CONFIG.SERVER_RESPONSE.SUCCESS)){
-                        createLocalMessageBoxWithNewFriend();
+                        handleNewFriend();
                     }
                     break;
                 case FRIENDS_LIST:
@@ -75,7 +75,7 @@ public class InteractiveThread extends Thread{
                     break;
                 case NEW_GROUP_REQUEST_RESULT:
                     if (((String) data).equals(CONFIG.SERVER_RESPONSE.SUCCESS)){
-                        createLocalGroupMessageBox();
+                        createGroupMessageBox();
                     }
                     break;
                 default:
@@ -103,7 +103,12 @@ public class InteractiveThread extends Thread{
             JOptionPane.showMessageDialog(ClientApp.navigator.mainFrameManager.frame, message.getSender().getName() + " has some message for you!");
             return;
         }
-        ClientApp.navigator.mainFrameManager.updateMessageTable();
+        try{
+            ClientApp.navigator.mainFrameManager.updateMessageTable();
+        } catch (NullPointerException ex){
+            System.out.println(message.getSender().getName() + " sent something!");
+        }
+        
     }
     
     public void handleReceivedSearchResult(Object data){
@@ -115,9 +120,14 @@ public class InteractiveThread extends Thread{
         ClientApp.navigator.newGroupRequester.friendsList = (List <User>) data;
         ClientApp.navigator.newGroupRequester.updateFriendsListTable();
     }
-    
-    public void createLocalMessageBoxWithNewFriend(){
+    public void handleNewFriend(){
         Object data = UDPService.receive(datagramSocket);
+        ClientApp.navigator.addFriendRequester.recommendUsers.remove((User)data);
+        JOptionPane.showMessageDialog(ClientApp.navigator.addFriendRequester.frame, "Added!");
+        ClientApp.navigator.addFriendRequester.updateSearchResultTable();
+        createLocalMessageBoxWithNewFriend(data);
+    }
+    public void createLocalMessageBoxWithNewFriend(Object data){
         MessageBox messageBox;
         User newFriend;
         try{
@@ -133,7 +143,7 @@ public class InteractiveThread extends Thread{
         ClientApp.navigator.mainFrameManager.updateChatBoxsTable();
     }
     
-    public void createLocalGroupMessageBox(){
+    public void createGroupMessageBox(){
         Group newGroup = (Group) UDPService.receive(datagramSocket);
         ClientApp.navigator.mainFrameManager.messageRepository
                 .getMessageBoxs().put(

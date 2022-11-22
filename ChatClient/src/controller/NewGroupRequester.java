@@ -61,7 +61,7 @@ public class NewGroupRequester extends FrameController<NewGroupFrame>{
     }
     public void updateFriendsListTable(){
         DefaultTableModel dtm = (DefaultTableModel) frame.getFriendListTable().getModel();
-        dtm.getDataVector().removeAllElements();
+        dtm.setRowCount(0);
         for (User u:friendsList) {
             dtm.addRow(new Object[]{u.getUsername(), u.getName()});
         }

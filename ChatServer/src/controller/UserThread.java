@@ -58,7 +58,7 @@ public class UserThread extends Thread{
     
     private void getClientDatagramSocketPort(){
         int port = (int) TCPService.receive(client.getSocket());
-        ServerApp.mainController.connectedClients.get(client.getSocket().getPort()).setClientDatagramSocketPort(port);
+        ServerApp.mainController.connectionObserver.connectedClients.get(client.getSocket().getPort()).setClientDatagramSocketPort(port);
     }
     
     private void sendResposeType(Client receiver, CONFIG.RESPONSE_TYPE type){
@@ -101,10 +101,12 @@ public class UserThread extends Thread{
     private void handleMessage(Object data){
         Message message = (Message) data;
         Map <Integer, Client> connectedClientsById = 
-                ServerApp.mainController.connectedClients
-                        .values().stream().collect(
+                ServerApp.mainController.connectionObserver.connectedClients
+                        .values().stream()
+                        .filter(c -> c.getUser() != null)
+                        .collect(
                                 Collectors.toMap(
-                                        (Client c) -> c.getUser().getId(),
+                                        c -> c.getUser().getId(),
                                         Function.identity(),
                                         (c1, c2) -> c1
                                 )
@@ -157,15 +159,32 @@ public class UserThread extends Thread{
         sendToClient(client, UserService.getAllFriendsOf(client.getUser()));
     }
     private void handleNewGroupRequest(Object data){
-        sendResposeType(client, CONFIG.RESPONSE_TYPE.NEW_GROUP_REQUEST_RESULT);
         String groupName = (String) data;
         List <User> members = (List <User>) UDPService.receive(datagramSocket);
         Group newGroup = GroupService.create(new Group(groupName));
-        if (MessageBoxService.create(members, newGroup) == members.size()){
-            sendToClient(client, CONFIG.SERVER_RESPONSE.SUCCESS);
-            sendToClient(client, newGroup);
-        } else {
-            sendToClient(client, CONFIG.SERVER_RESPONSE.FAILED);
+        Map <Integer, Client> connectedClientsById = 
+                ServerApp.mainController.connectionObserver.connectedClients
+                        .values().stream()
+                        .filter(c -> c.getUser() != null)
+                        .collect(
+                                Collectors.toMap(
+                                        c -> c.getUser().getId(),
+                                        Function.identity(),
+                                        (c1, c2) -> c1
+                                )
+                        );
+        boolean createNewGroupResult = MessageBoxService.create(members, newGroup) == members.size();
+        for (User member:members){
+            if (connectedClientsById.containsKey(member.getId())){
+                Client target = connectedClientsById.get(member.getId());
+                sendResposeType(target, CONFIG.RESPONSE_TYPE.NEW_GROUP_REQUEST_RESULT);
+                if (createNewGroupResult){
+                    sendToClient(target, CONFIG.SERVER_RESPONSE.SUCCESS);
+                    sendToClient(target, newGroup);
+                } else {
+                    sendToClient(target, CONFIG.SERVER_RESPONSE.FAILED);
+                }
+            }
         }
     }
     

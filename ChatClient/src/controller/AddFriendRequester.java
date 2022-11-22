@@ -47,7 +47,7 @@ public class AddFriendRequester extends FrameController<AddFriendFrame>{
     
     public void updateSearchResultTable(){
         DefaultTableModel dtm = (DefaultTableModel) frame.getSearchResultTable().getModel();
-        dtm.getDataVector().removeAllElements();
+        dtm.setRowCount(0);
         for (User u:recommendUsers) {
             dtm.addRow(new Object[]{u.getUsername(), u.getName()});
         }

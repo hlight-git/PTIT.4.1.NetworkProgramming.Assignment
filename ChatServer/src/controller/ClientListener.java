@@ -7,6 +7,7 @@ package controller;
 
 import app.CONFIG;
 import app.ServerApp;
+import java.net.SocketException;
 import model.Client;
 import model.DTO.User;
 import service.TCPService;
@@ -24,21 +25,25 @@ public class ClientListener extends Thread{
     }
     
     public void run(){
-        while(client.getUser() == null){
-            User user = (User) TCPService.receive(client.getSocket());
-            if (user.getName() == null){
-                User validatedUser = UserService.loginValidate(user);
-                client.setUser(validatedUser);
-                new UserThread(client).start();
-                TCPService.send(client.getSocket(), client.getUser());
-                ServerApp.mainController.updateConnectedTable();
-            } else {
-                if (UserService.create(user) != null){
-                    TCPService.send(client.getSocket(), CONFIG.SERVER_RESPONSE.SUCCESS);
+        try{
+            while(client.getUser() == null){
+                User user = (User) TCPService.receive(client.getSocket());
+                if (user.getName() == null){
+                    User validatedUser = UserService.loginValidate(user);
+                    client.setUser(validatedUser);
+                    new UserThread(client).start();
+                    TCPService.send(client.getSocket(), client.getUser());
+                    ServerApp.mainController.connectionObserver.updateConnectedTable();
                 } else {
-                    TCPService.send(client.getSocket(), CONFIG.SERVER_RESPONSE.REGISTER_FAILED);
+                    if (UserService.create(user) != null){
+                        TCPService.send(client.getSocket(), CONFIG.SERVER_RESPONSE.SUCCESS);
+                    } else {
+                        TCPService.send(client.getSocket(), CONFIG.SERVER_RESPONSE.REGISTER_FAILED);
+                    }
                 }
             }
+        } catch (NullPointerException ex){
+            ex.printStackTrace();
         }
     }
 }

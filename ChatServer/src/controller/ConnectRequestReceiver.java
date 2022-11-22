@@ -21,7 +21,7 @@ import model.DTO.User;
  *
  * @author ADMIN
  */
-public class ServerRunner extends Thread{
+public class ConnectRequestReceiver extends Thread{
     ServerSocket socket;
     int port;
     
@@ -55,7 +55,7 @@ public class ServerRunner extends Thread{
                 Socket clientSocket = socket.accept();
                 if (socket != null){
                     Client client = new Client(clientSocket);
-                    ServerApp.mainController.addConnectedClient(client);
+                    ServerApp.mainController.connectionObserver.addConnectedClient(client);
                     new ClientListener(client).start();
                 }
             } catch (IOException ex) {
