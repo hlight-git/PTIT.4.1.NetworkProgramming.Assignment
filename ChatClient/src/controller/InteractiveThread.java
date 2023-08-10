@@ -122,7 +122,6 @@ public class InteractiveThread extends Thread{
     }
     public void handleNewFriend(){
         Object data = UDPService.receive(datagramSocket);
-        ClientApp.navigator.addFriendRequester.recommendUsers.remove((User)data);
         JOptionPane.showMessageDialog(ClientApp.navigator.addFriendRequester.frame, "Added!");
         ClientApp.navigator.addFriendRequester.updateSearchResultTable();
         createLocalMessageBoxWithNewFriend(data);

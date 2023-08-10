@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketAddress;
+import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.util.HashMap;
 import java.util.Map;
@@ -39,7 +40,7 @@ public class ConnectionObserver extends Thread{
     public void run() {
         while(ServerApp.mainController.running){
             try {
-                sleep(2000);
+                sleep(5000);
             } catch (InterruptedException ex) {
                 Logger.getLogger(ConnectionObserver.class.getName()).log(Level.SEVERE, null, ex);
             }
@@ -68,8 +69,8 @@ public class ConnectionObserver extends Thread{
             SocketAddress sa = new InetSocketAddress(client.getSocket().getInetAddress(), client.getSocket().getPort());
             try{
                 socket.connect(sa, 5000);
-            } catch (SocketTimeoutException ex){
-                connecting = false;
+            } catch (SocketTimeoutException | SocketException ex){
+//                connecting = false;
             } catch (IOException ex){
                 ex.printStackTrace();
             }
@@ -89,7 +90,6 @@ public class ConnectionObserver extends Thread{
                 );
             } else {
                 connectedClients.remove(p);
-                System.out.println(client.getSocket().getPort() + " disconnected");
             }
         }
     } 
